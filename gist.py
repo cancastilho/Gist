@@ -326,7 +326,7 @@ class GistListCommandBase(object):
     def run(self, *args):
         MAX_GISTS = '?per_page=%d' % settings.loaded_settings.get('max_gists')
         settings.GISTS_URL += MAX_GISTS
-        filtered = gists_filter(api_request(GISTS_URL))
+        filtered = gists_filter(api_request(settings.GISTS_URL))
         filtered_stars = gists_filter(api_request(settings.STARRED_GISTS_URL))
 
         self.gists = filtered[0] + filtered_stars[0]
