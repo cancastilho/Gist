@@ -325,9 +325,10 @@ class GistListCommandBase(object):
     @catch_errors
     def run(self, *args):
         MAX_GISTS = '?per_page=%d' % settings.loaded_settings.get('max_gists')
-        settings.GISTS_URL += MAX_GISTS
-        filtered = gists_filter(api_request(settings.GISTS_URL))
-        filtered_stars = gists_filter(api_request(settings.STARRED_GISTS_URL))
+        GISTS_URL = settings.GISTS_URL + MAX_GISTS
+        STARRED_GISTS_URL = settings.STARRED_GISTS_URL + MAX_GISTS
+        filtered = gists_filter(api_request(GISTS_URL))
+        filtered_stars = gists_filter(api_request(STARRED_GISTS_URL))
 
         self.gists = filtered[0] + filtered_stars[0]
         gist_names = filtered[1] + list(map(lambda x: [u"★ " + x[0]], filtered_stars[1]))
