@@ -3,7 +3,8 @@
 	{ "keys": ["super+k", "super+p"], "command": "gist_private" },
 	{ "keys": ["super+k", "super+s"], "command": "gist_update_file" },
 	{ "keys": ["super+k", "super+o"], "command": "gist_list" },
-	{ "keys": ["super+k", "super+l"], "command": "gist_list_cache" },
+	{ "keys": ["ctrl+k", "ctrl+shift+l"], "command": "gist_list_cache" , "args":{"refresh":true}},
+	{ "keys": ["ctrl+k", "ctrl+l"], "command": "gist_list_cache" , "args":{"refresh":false}},
 	{ "keys": ["super+k", "super+["], "command": "insert_gist_list" },
 	{ "keys": ["super+k", "super+]"], "command": "gist_add_file" }
 ]

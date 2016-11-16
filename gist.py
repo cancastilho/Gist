@@ -412,11 +412,14 @@ class GistListCommand(GistListCommandBase, sublime_plugin.WindowCommand):
 
 class GistListCacheCommand(GistListCommand):
 
-    def run(self, *args):
-        if(len(self.gists) > 0):
-            self.get_window().show_quick_panel(self.gist_names, self.on_gist_num)
+    def run(self, refresh):
+        if(refresh):
+            GistListCommand.run(self)
         else:
-            GistListCommand.run(self, args)
+            if(len(self.gists) > 0):
+                self.get_window().show_quick_panel(self.gist_names, self.on_gist_num)
+            else:
+                GistListCommand.run(self)
 
 class GistListener(GistViewCommand, sublime_plugin.EventListener):
     @catch_errors
