@@ -107,10 +107,20 @@ Use the `Gist` / `Add File To Gist` command to see a list of your Gists. Selecti
 * Windows and Linux: `Ctrl+K` `Ctrl+S`
 * OS X: `Super+K` `Super+S`
 
-## Open Gist
+## Open Gist (from local cache)
 
 * Windows and Linux: `Ctrl+K` `Ctrl+O`
 * OS X: `Super+K` `Super+O`
+
+## Open Gist (from gists server)
+
+* Windows and Linux: `Ctrl+K` `Ctrl+Shift+O`
+* OS X: `Super+K` `Super+Shift+O`
+
+## Open Gist on Browser
+
+* Windows and Linux: `Ctrl+K` `Ctrl+J`
+* OS X: `Super+K` `Super+J`
 
 ## Insert Gist
 
