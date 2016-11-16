@@ -13,7 +13,13 @@
     },    
     {
         "caption": "Gist: Open Gist Cache",
-        "command": "gist_list_cache"
+        "command": "gist_list_cache",
+        "args":{"refresh": false}
+    },
+    {
+        "caption": "Gist: Open Gist Refreshed Cache",
+        "command": "gist_list_cache",
+        "args":{"refresh": true}
     },
     {
         "caption": "Gist: Insert Gist",
