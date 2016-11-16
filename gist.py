@@ -6,6 +6,9 @@ import os
 import sys
 import json
 import functools
+
+
+
 import webbrowser
 import tempfile
 import traceback
@@ -319,23 +322,41 @@ class GistPrivateCommand(GistCommand):
     public = False
 
 
+
 class GistListCommandBase(object):
     gists = orgs = users = []
 
     @catch_errors
     def run(self, *args):
-        MAX_GISTS = '?per_page=%d' % settings.loaded_settings.get('max_gists')
-        GISTS_URL = settings.GISTS_URL + MAX_GISTS
-        STARRED_GISTS_URL = settings.STARRED_GISTS_URL + MAX_GISTS
-        filtered = gists_filter(api_request(GISTS_URL))
-        filtered_stars = gists_filter(api_request(STARRED_GISTS_URL))
+        MAX_GISTS = settings.loaded_settings.get('max_gists')
+        PAGINATE = settings.loaded_settings.get('paginate')
+        filtered = [[],[]] # [gists, gist_names]
+        filtered_stars = [[],[]] # [gists, gist_names]
+        PAGE = 1
+        MAX_GISTS_RETURNS=3000
+        PAGINATION_GISTS_URL = 'https://api.github.com/gists?per_page=%d&page=%d'
+        PAGINATION_STARRED_GISTS_URL  = 'https://api.github.com/gists/starred?per_page=%d&page=%d'
+        MAX_NUM_PAGES = MAX_GISTS_RETURNS // MAX_GISTS
+        while PAGE <= MAX_NUM_PAGES:
+            PAGINATION_GISTS_URL_REPLACED = PAGINATION_GISTS_URL % (MAX_GISTS, PAGE)
+            filtered_page = gists_filter(api_request(PAGINATION_GISTS_URL_REPLACED))
+            PAGINATION_STARRED_GISTS_URL_REPLACED = PAGINATION_STARRED_GISTS_URL % (MAX_GISTS, PAGE)
+            filtered_stars_page = gists_filter(api_request(PAGINATION_STARRED_GISTS_URL_REPLACED))
+            if( PAGINATE and len(filtered_page[0]) > 0 ):
+                filtered[0].extend(filtered_page[0])
+                filtered[1].extend(filtered_page[1])
+                filtered_stars[0].extend(filtered_stars_page[0])
+                filtered_stars[1].extend(filtered_stars_page[1])
+                PAGE += 1
+            else:
+                break
 
         self.gists = filtered[0] + filtered_stars[0]
-        gist_names = filtered[1] + list(map(lambda x: [u"★ " + x[0]], filtered_stars[1]))
+        self.gist_names = filtered[1] + list(map(lambda x: [u"★ " + x[0]], filtered_stars[1]))
 
         if settings.get('include_users'):
             self.users = list(settings.get('include_users'))
-            gist_names = [["> " + user] for user in self.users] + gist_names
+            self.gist_names = [["> " + user] for user in self.users] + self.gist_names
 
         if settings.get('include_orgs'):
             if settings.get('include_orgs') == True:
@@ -343,42 +364,41 @@ class GistListCommandBase(object):
             else:
                 self.orgs = settings.get('include_orgs')
 
-            gist_names = [["> " + org] for org in self.orgs] + gist_names
+            self.gist_names = [["> " + org] for org in self.orgs] + self.gist_names
 
-        # print(gist_names)
+        # print(self.gist_names)
+        self.get_window().show_quick_panel(self.gist_names, self.on_gist_num)
 
-        def on_gist_num(num):
-            offOrgs = len(self.orgs)
-            offUsers = offOrgs + len(self.users)
+    def on_gist_num(self, num):
+        offOrgs = len(self.orgs)
+        offUsers = offOrgs + len(self.users)
 
-            if num < 0:
-                pass
-            elif num < offOrgs:
-                self.gists = []
+        if num < 0:
+            pass
+        elif num < offOrgs:
+            self.gists = []
 
-                members = [member.get("login") for member in api_request(settings.ORG_MEMBERS_URL % self.orgs[num])]
-                for member in members:
-                    self.gists += api_request(settings.USER_GISTS_URL % member)
+            members = [member.get("login") for member in api_request(settings.ORG_MEMBERS_URL % self.orgs[num])]
+            for member in members:
+                self.gists += api_request(settings.USER_GISTS_URL % member)
 
-                filtered = gists_filter(self.gists)
-                self.gists = filtered[0]
-                gist_names = filtered[1]
-                # print(gist_names)
+            filtered = gists_filter(self.gists)
+            self.gists = filtered[0]
+            self.gist_names = filtered[1]
+            # print(self.gist_names)
 
-                self.orgs = self.users = []
-                self.get_window().show_quick_panel(gist_names, on_gist_num)
-            elif num < offUsers:
-                filtered = gists_filter(api_request(settings.USER_GISTS_URL % self.users[num - offOrgs]))
-                self.gists = filtered[0]
-                gist_names = filtered[1]
-                # print(gist_names)
+            self.orgs = self.users = []
+            self.get_window().show_quick_panel(self.gist_names, self.on_gist_num)
+        elif num < offUsers:
+            filtered = gists_filter(api_request(settings.USER_GISTS_URL % self.users[num - offOrgs]))
+            self.gists = filtered[0]
+            self.gist_names = filtered[1]
+            # print(self.gist_names)
 
-                self.orgs = self.users = []
-                self.get_window().show_quick_panel(gist_names, on_gist_num)
-            else:
-                self.handle_gist(self.gists[num - offUsers])
-
-        self.get_window().show_quick_panel(gist_names, on_gist_num)
+            self.orgs = self.users = []
+            self.get_window().show_quick_panel(self.gist_names, self.on_gist_num)
+        else:
+            self.handle_gist(self.gists[num - offUsers])
 
 
 class GistListCommand(GistListCommandBase, sublime_plugin.WindowCommand):
@@ -389,6 +409,14 @@ class GistListCommand(GistListCommandBase, sublime_plugin.WindowCommand):
     def get_window(self):
         return self.window
 
+
+class GistListCacheCommand(GistListCommand):
+
+    def run(self, *args):
+        if(len(self.gists) > 0):
+            self.get_window().show_quick_panel(self.gist_names, self.on_gist_num)
+        else:
+            GistListCommand.run(self, args)
 
 class GistListener(GistViewCommand, sublime_plugin.EventListener):
     @catch_errors

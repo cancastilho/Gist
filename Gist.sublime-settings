@@ -31,6 +31,10 @@
     // Max Gists to show (max 100 allowed by GitHub API)
     "max_gists": 100,
 
+    //Enable pagination. Use this to retrieve more than 100 gists with pagination. 
+    //Max Gists returned allowed by Github API is 3000, only with pagination. 
+    "paginate": true,
+
     // Only use starred gists
     "use_starred": false,
 

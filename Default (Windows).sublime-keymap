@@ -3,6 +3,7 @@
 	{ "keys": ["ctrl+k", "ctrl+p"], "command": "gist_private" },
 	{ "keys": ["ctrl+k", "ctrl+s"], "command": "gist_update_file" },
 	{ "keys": ["ctrl+k", "ctrl+o"], "command": "gist_list" },
+	{ "keys": ["ctrl+k", "ctrl+l"], "command": "gist_list_cache" },
 	{ "keys": ["ctrl+k", "ctrl+["], "command": "insert_gist_list" },
 	{ "keys": ["ctrl+k", "ctrl+]"], "command": "gist_add_file" }
 ]
